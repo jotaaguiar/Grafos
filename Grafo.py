@@ -4,6 +4,41 @@ import random
 import time
 
 
+class Subconjunto:
+    def __init__(self, pai, classificacao):
+        self.pai = pai
+        self.classificacao = classificacao
+
+
+class Aresta:
+    def __init__(self, origem, destino, peso):
+        self.origem = origem
+        self.destino = destino
+        self.peso = peso
+        
+
+# Função para verificar se o grafo é bipartido
+def is_bipartite(graph):
+    colors = {}  # Dicionário para armazenar as cores dos vértices
+    stack = []  # Pilha para realizar a DFS
+
+    # Função auxiliar para atribuir cores durante a DFS
+    def dfs(node, color):
+        if node in colors:
+            return colors[node] == color
+        colors[node] = color
+        for neighbor, _ in graph.graph.get(node, []):
+            if not dfs(neighbor, 1 - color):  # Alternar as cores entre 0 e 1
+                return False
+        return True
+
+    # Realiza a DFS para todos os vértices não visitados
+    for node in graph.graph:
+        if node not in colors:
+            if not dfs(node, 0):
+                return False
+    return True
+
 def insertEdge(matrix: Matrix, list: List, directed):
     source = int(input("Vértice de origem: "))
     destination = int(input("Vértice de destino: "))
@@ -170,81 +205,8 @@ def get_path(matrix: Matrix, list: List, directed):
     print("-----MATRIZ-----")
     if not matrix.get_Path(source, destination):
         print("Não há caminho")
-
-
-def dijkstra(matrix: Matrix, list: List):
-    source = int(input("Vértice de origem: "))
-    print("-----LISTA------")
-    ini = time.time()
-    list.dijkstra(source)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-    print("-----MATRIZ-----")
-    ini = time.time()
-    result = matrix.dijkstra(source)
-    print("Distâncias mínimas a partir do vértice",source, ":", result)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-def bellman_ford(matrix: Matrix, lista: List):
-    source = int(input("Vértice de origem: "))
-    
-    # Aplica Bellman-Ford na lista
-    print("-----LISTA------")
-    ini = time.time()
-    list.bellman_ford(source)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-    print("-----MATRIZ-----")
-    ini = time.time()
-    resultado_matriz = matrix.bellman_ford(source)
-    if isinstance(resultado_matriz, str):
-        print(resultado_matriz)  # Se houver um ciclo de peso negativo
-    else:
-        distancias_matriz, predecessores_matriz = resultado_matriz
-        print("Distâncias a partir do vértice de origem (matriz):", distancias_matriz)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-def floyd_warshall(matrix: Matrix, list: List):
-    print("-----LISTA------")
-    ini = time.time()
-    list.floyd_warshall()
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-    print("-----MATRIZ-----")
-    ini = time.time()
-    matrix.floyd_Warshall()
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-def a_star(matrix: Matrix, list: List):
-    start_state = int(input("Vértice de partida: "))
-    goal_state = int(input("Vértice de destino: "))
-    print("-----LISTA------")
-    ini = time.time()
-    path = list.a_star(start_state, goal_state)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
-    print("Caminho encontrado:", path)
-    print("-----MATRIZ-----")
-    ini = time.time()
-    path = matrix.astar(start_state, goal_state)
-    print("Caminho encontrado:", path)
-    fim = time.time()
-    tempo_execucao = fim - ini
-    print(f'Tempo de execução: {tempo_execucao} segundos')
-
+        
+        
 def autofill(matrix: Matrix, list: List):
     for i in range(len(list.graph)):
         for j in range(len(list.graph)):
@@ -252,7 +214,87 @@ def autofill(matrix: Matrix, list: List):
                 weight = random.randint(1, 10)
                 list.add_edge(i, j, weight, directed)
                 matrix.add_edge(i, j, weight)
+                
+def bipartido(matrix: Matrix, list_obj: List):
 
+    # Verificar se o grafo é bipartido
+    if is_bipartite(list_obj):
+        print("O grafo é bipartido.")
+    else:
+        print("O grafo não é bipartido.")
+        
+def is_simple(graph: Matrix) -> bool:
+    for i in range(graph.n):
+        for j in range(graph.n):
+            if graph.graph[i][j] != "-" and i == j:  # Se há um laço
+                return False
+            for k in range(graph.n):
+                if graph.graph[i][j] != "-" and graph.graph[j][k] != "-" and graph.graph[i][k] != "-":  # Se há uma aresta paralela
+                    return False
+    return True
+ 
+def simpleGraph(matrix: Matrix):
+    # Verificar se o grafo é simples
+    if is_simple(matrix):
+        print("O grafo é simples.")
+    else:
+        print("O grafo não é simples.")
+        
+def encontrar(subconjuntos, i):
+    if subconjuntos[i].pai != i:
+        subconjuntos[i].pai = encontrar(subconjuntos, subconjuntos[i].pai)
+    return subconjuntos[i].pai
+
+
+def unir(subconjuntos, x, y):
+    raiz_x = encontrar(subconjuntos, x)
+    raiz_y = encontrar(subconjuntos, y)
+
+    if subconjuntos[raiz_x].classificacao < subconjuntos[raiz_y].classificacao:
+        subconjuntos[raiz_x].pai = raiz_y
+    elif subconjuntos[raiz_x].classificacao > subconjuntos[raiz_y].classificacao:
+        subconjuntos[raiz_y].pai = raiz_x
+    else:
+        subconjuntos[raiz_y].pai = raiz_x
+        subconjuntos[raiz_x].classificacao += 1
+
+
+def encontrar_AGM(matrixx=None):
+
+
+    if matrixx is not None:
+        matrix = matrixx.graph
+        n = len(matrix)
+        arestas = []
+        for i in range(n):
+            for j in range(n):
+                if matrix[i][j] != "-" and i != j:
+                    arestas.append(Aresta(i, j, int(matrix[i][j])))
+
+        agm = []
+        subconjuntos = []
+
+        arestas.sort(key=lambda x: x.peso)
+
+        for i in range(n):
+            subconjuntos.append(Subconjunto(i, 0))
+
+        i = 0
+        while len(agm) < n - 1 and i < len(arestas):
+            aresta = arestas[i]
+
+            raiz_origem = encontrar(subconjuntos, aresta.origem)
+            raiz_destino = encontrar(subconjuntos, aresta.destino)
+
+            if raiz_origem != raiz_destino:
+                agm.append(aresta)
+                unir(subconjuntos, raiz_origem, raiz_destino)
+
+            i += 1
+
+        print("Arestas da Árvore Geradora Mínima:")
+        for aresta in agm:
+            print(f"{aresta.origem} -- {aresta.destino} (peso {aresta.peso})")
 
 if __name__ == "__main__":
     directed = bool(int(input("O grafo será direcionado? (1- Direcionado / 0- Não direcionado): ")))
@@ -261,6 +303,7 @@ if __name__ == "__main__":
     matrix = Matrix(n, directed)
 
     while True:
+        
         print("\nOpções:")
         print("1. Inserir aresta")
         print("2. Remover aresta")
@@ -271,14 +314,13 @@ if __name__ == "__main__":
         print("7. Verificar se o grafo é conexo")
         print("8. Verificar se o grafo é regular")
         print("9. Verificar se o grafo é completo")
-        print("10. Busca em profundidade")
-        print("11. Busca em largura")
-        print("12. Verificar se há caminho")
-        print("13. Algoritmo Dijkstra")
-        print("14. Algoritmo Bellman e Ford")
-        print("15. Algoritmo Floyd Warshall")
-        print("16. Algoritmo A*")
-        print("17. Preencher automaticamente")
+        print("10. Verificar se o grafo é bipartido")
+        print("11. Busca em profundidade")
+        print("12. Busca em largura")
+        print("16. Busca em AGM")
+        print("13. Verificar se há caminho")
+        print("14. Verificar se o grafo é simples")
+        print("15. Preencher automaticamente")
 
         choice = int(input("Escolha uma opção: "))
 
@@ -302,18 +344,16 @@ if __name__ == "__main__":
             case 9:
                 is_complete(matrix, list, directed)
             case 10:
-                depth_first_search(matrix, list)
+                bipartido(matrix, list)
             case 11:
-                breadth_first_search(matrix, list)
+                depth_first_search(matrix, list)
             case 12:
-                get_path(matrix, list, directed)
+                breadth_first_search(matrix, list)
             case 13:
-                dijkstra(matrix, list)
+                get_path(matrix, list, directed)
             case 14:
-                bellman_ford(matrix, list)
+                simpleGraph(matrix)
             case 15:
-                floyd_warshall(matrix, list)
-            case 16:
-                a_star(matrix, list)
-            case 17:
                 autofill(matrix, list)
+            case 16:
+                encontrar_AGM(matrix)
