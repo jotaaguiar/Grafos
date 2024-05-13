@@ -296,6 +296,51 @@ def encontrar_AGM(matrixx=None):
         for aresta in agm:
             print(f"{aresta.origem} -- {aresta.destino} (peso {aresta.peso})")
 
+def topological_sort(graph):
+    stack = []
+
+    # Função auxiliar DFS para fazer a ordenação topológica
+    def dfs(node, visited, stack):
+        visited.add(node)
+        for neighbor in graph.get(node, []):
+            if neighbor not in visited:
+                dfs(neighbor, visited, stack)
+        stack.append(node)
+
+    visited = set()
+    for node in graph:
+        if node not in visited:
+            dfs(node, visited, stack)
+
+    return stack[::-1]
+
+
+def topological_sortWrapper(matrix: Matrix, list: List , directed : bool):
+    if directed == False:
+        print("Não é possível realizar a ordenação topologica, por se tratar de um grafo não direcionado. ")
+        
+        return True
+    
+    if matrix is not None:
+        # Convertendo a matriz de adjacência para um dicionário
+        graph_dict = {}
+        for i in range(matrix.n):
+            neighbors = []
+            for j in range(matrix.n):
+                if matrix.graph[i][j] != "-":
+                    neighbors.append(j)
+            graph_dict[i] = neighbors
+
+        # Ordenação topológica
+        sorted_nodes = topological_sort(graph_dict)
+        print("Ordenação Topológica (Matriz de Adjacência):", sorted_nodes)
+
+    if list is not None:
+        # Utilize a função topological_sort diretamente para a lista de adjacência
+        sorted_nodes = topological_sort(list.graph)
+        print("Ordenação Topológica (Lista de Adjacência):", sorted_nodes)
+   
+        
 if __name__ == "__main__":
     directed = bool(int(input("O grafo será direcionado? (1- Direcionado / 0- Não direcionado): ")))
     n = int(input("Informe o número de vértices: "))
@@ -311,16 +356,18 @@ if __name__ == "__main__":
         print("4. Consultar grau do vértice")
         print("5. Consultar grau do grafo")
         print("6. Consultar vizinhos de um vértice")
-        print("7. Verificar se o grafo é conexo")
+        print("7. Verificar se o grafo é simples")
         print("8. Verificar se o grafo é regular")
         print("9. Verificar se o grafo é completo")
         print("10. Verificar se o grafo é bipartido")
         print("11. Busca em profundidade")
         print("12. Busca em largura")
-        print("16. Busca em AGM")
         print("13. Verificar se há caminho")
-        print("14. Verificar se o grafo é simples")
-        print("15. Preencher automaticamente")
+        print("14. Verificar se o grafo é conexo")
+        print("15. Busca em AGM ( Kruskal )")
+        print("16. Ordenação Topológica")
+        print("17. Preencher automaticamente")
+
 
         choice = int(input("Escolha uma opção: "))
 
@@ -338,7 +385,7 @@ if __name__ == "__main__":
             case 6:
                 find_neighbors(matrix, list, directed)
             case 7:
-                is_connected(matrix, list, directed)
+                simpleGraph(matrix)
             case 8:
                 is_regular(matrix, list, directed)
             case 9:
@@ -350,10 +397,12 @@ if __name__ == "__main__":
             case 12:
                 breadth_first_search(matrix, list)
             case 13:
-                get_path(matrix, list, directed)
+                get_path(matrix, list, directed)              
             case 14:
-                simpleGraph(matrix)
+                is_connected(matrix, list, directed)
             case 15:
-                autofill(matrix, list)
-            case 16:
                 encontrar_AGM(matrix)
+            case 16:
+                topological_sortWrapper(matrix, list, directed)
+            case 17:
+                autofill(matrix, list)
